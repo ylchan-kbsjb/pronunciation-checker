@@ -3,960 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P5 English Pronunciation Assessment Platform</title>
-    <!-- Tailwind CSS -->
+    <title>P5 English AI Pronunciation Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        display: ['Fredoka', 'sans-serif'],
-                    },
-                    colors: {
-                        p5blue: { 50: '#f0f7ff', 100: '#e0effe', 500: '#0284c7', 600: '#0369a1', 700: '#075985' },
-                        p5purple: { 50: '#faf5ff', 500: '#a855f7', 600: '#9333ea' },
-                        p5green: { 50: '#f0fdf4', 500: '#22c55e', 600: '#16a34a' },
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .font-display { font-family: 'Fredoka', cursive, sans-serif; }
-        .pulse-record {
-            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-            animation: pulse-red 1.5s infinite;
-        }
-        @keyframes pulse-red {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-sky-200">
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans">
 
-    <!-- Navigation Bar -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
-                    <i class="fa-solid font-display">P5</i>
-                </div>
-                <div>
-                    <h1 class="font-display text-lg sm:text-xl font-bold bg-gradient-to-r from-sky-600 to-indigo-600 bg-clip-text text-transparent">
-                        English Pronunciation Hub
-                    </h1>
-                    <p class="text-xs text-slate-500 font-medium">Classes 5A • 5B • 5C • 5D • 5E</p>
-                </div>
-            </div>
-
-            <div class="flex items-center space-x-2 sm:space-x-4">
-                <!-- Status Badge -->
-                <div id="sync-status" class="hidden sm:flex items-center space-x-2 px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>Real-time Live Sync</span>
-                </div>
-
-                <!-- View Switcher -->
-                <div class="bg-slate-100 p-1 rounded-xl flex border border-slate-200 text-xs sm:text-sm font-semibold">
-                    <button id="btn-view-student" onclick="switchView('student')" class="px-3 py-1.5 rounded-lg transition-all duration-200 bg-white text-sky-700 shadow-sm">
-                        <i class="fa-solid fa-graduation-cap mr-1.5"></i>Student
-                    </button>
-                    <button id="btn-view-teacher" onclick="switchView('teacher')" class="px-3 py-1.5 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900">
-                        <i class="fa-solid fa-chalkboard-user mr-1.5"></i>Teacher Portal
-                    </button>
-                </div>
-            </div>
+    <!-- NAV BAR -->
+    <nav class="bg-indigo-600 text-white shadow-md p-4 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid me-2 fa-microphone-lines text-2xl text-yellow-300"></i>
+            <h1 class="font-bold text-xl tracking-wide">P5 AI Pronunciation Evaluator</h1>
         </div>
-    </header>
+        <button id="portalToggleBtn" onclick="openTeacherAuth()" class="bg-indigo-700 hover:bg-indigo-800 text-xs px-3 py-2 rounded-lg transition font-medium">
+            <i class="fa-solid fa-user-shield me-1"></i> Teacher Portal
+        </button>
+    </nav>
 
-    <!-- Main Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-4xl mx-auto p-4 md:p-6">
 
-        <!-- STUDENT VIEW -->
-        <div id="view-student" class="space-y-6">
-            <!-- Student Header & ID Setup -->
-            <div class="bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
-                <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl font-display pointer-events-none">P5</div>
-                <div class="relative z-10 max-w-3xl">
-                    <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md text-white text-xs font-semibold rounded-full mb-3">
-                        Primary 5 Reading Assessment
-                    </span>
-                    <h2 class="text-2xl sm:text-3xl font-display font-bold mb-2">Ready to practice your reading?</h2>
-                    <p class="text-sky-100 text-sm sm:text-base mb-6">Select your class and enter your name to view your assigned passage.</p>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/20">
-                        <div>
-                            <label class="block text-xs font-medium text-sky-100 mb-1">Select Class</label>
-                            <select id="student-class-select" onchange="onStudentClassChange()" class="w-full bg-white text-slate-800 rounded-xl px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-300">
-                                <option value="5A">Class 5A</option>
-                                <option value="5B">Class 5B</option>
-                                <option value="5C">Class 5C</option>
-                                <option value="5D">Class 5D</option>
-                                <option value="5E">Class 5E</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-sky-100 mb-1">Student Name</label>
-                            <input type="text" id="student-name-input" placeholder="e.g. Alex Wong" class="w-full bg-white text-slate-800 rounded-xl px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-300">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-sky-100 mb-1">Class No. / ID</label>
-                            <input type="text" id="student-id-input" placeholder="e.g. 12" class="w-full bg-white text-slate-800 rounded-xl px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-300">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Reading Passage Card -->
-            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+        <!-- STUDENT INTERFACE -->
+        <div id="studentView" class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-slate-700 mb-4 flex items-center">
+                    <span class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center me-2 text-sm">1</span>
+                    Student Information
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <div class="flex items-center space-x-2">
-                            <span id="badge-current-class" class="px-3 py-1 bg-sky-100 text-sky-800 text-xs font-bold rounded-lg">Class 5A Assignment</span>
-                            <span id="passage-updated-time" class="text-xs text-slate-400"><i class="fa-regular fa-clock mr-1"></i>Synced Real-Time</span>
-                        </div>
-                        <h3 id="passage-title" class="text-xl sm:text-2xl font-display font-bold text-slate-800 mt-2">Class Reading Assignment</h3>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Select Class</label>
+                        <select id="studentClass" onchange="loadPassageForClass()" class="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="5A">Primary 5A</option>
+                            <option value="5B">Primary 5B</option>
+                            <option value="5C">Primary 5C</option>
+                            <option value="5D">Primary 5D</option>
+                            <option value="5E">Primary 5E</option>
+                        </select>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <button onclick="playTTSSample()" class="px-4 py-2 bg-slate-100 hover:bg-sky-50 text-sky-700 hover:text-sky-800 rounded-xl text-sm font-semibold transition-all flex items-center space-x-2 border border-slate-200">
-                            <i class="fa-solid fa-volume-high text-sky-500"></i>
-                            <span>Listen to Model Audio</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Passage Box -->
-                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 sm:p-8 mb-6 relative">
-                    <p id="student-passage-text" class="text-lg sm:text-2xl font-sans leading-relaxed text-slate-700 tracking-wide font-normal">
-                        Loading assigned passage...
-                    </p>
-                </div>
-
-                <!-- Recording Studio Interface -->
-                <div class="bg-slate-900 rounded-2xl p-6 text-white flex flex-col items-center justify-center space-y-6">
-                    <div class="w-full max-w-xl flex flex-col items-center">
-                        <canvas id="visualizer" class="w-full h-16 bg-slate-950/60 rounded-xl mb-4 border border-slate-800"></canvas>
-                        
-                        <div class="flex items-center space-x-6">
-                            <button id="btn-record" onclick="toggleRecording()" class="w-20 h-20 rounded-full bg-gradient-to-tr from-rose-500 to-red-600 text-white flex items-center justify-center text-2xl shadow-lg hover:opacity-90 active:scale-95 transition-all">
-                                <i id="icon-record" class="fa-solid fa-microphone"></i>
-                            </button>
-                        </div>
-                        <p id="record-status-text" class="mt-3 text-sm font-semibold text-slate-400">Click to start recording your reading</p>
-                    </div>
-
-                    <!-- Audio Playback Preview & Submit -->
-                    <div id="audio-preview-box" class="hidden w-full max-w-md bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col items-center space-y-3">
-                        <audio id="audio-preview" controls class="w-full h-10"></audio>
-                        <button id="btn-submit-reading" onclick="evaluateReading()" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center space-x-2">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i>
-                            <span>Analyze Pronunciation with Gemini</span>
-                        </button>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Student Name / ID</label>
+                        <input type="text" id="studentName" placeholder="e.g. Alex Wong (05)" class="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
                 </div>
             </div>
 
-            <!-- Evaluation Results Section -->
-            <div id="evaluation-result-card" class="hidden bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-6">
-                <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl">
-                            <i class="fa-solid fa-award"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-display font-bold text-slate-800">Assessment Report</h3>
-                            <p class="text-xs text-slate-500">Saved to Teacher Gradebook automatically</p>
-                        </div>
-                    </div>
-                    <span id="res-score-badge" class="px-4 py-2 bg-emerald-50 text-emerald-700 text-xl font-display font-bold rounded-2xl border border-emerald-200">
-                        88 / 100
-                    </span>
+            <!-- PASSAGE DISPLAY -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-bold text-slate-700 flex items-center">
+                        <span class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center me-2 text-sm">2</span>
+                        Assigned Passage
+                    </h2>
+                    <span id="classBadge" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold">Class 5A</span>
                 </div>
-
-                <!-- Sub Metric Cards -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl text-center">
-                        <span class="text-xs text-slate-500 font-medium block mb-1">Accuracy</span>
-                        <span id="res-accuracy" class="text-xl font-bold text-sky-600">92%</span>
-                    </div>
-                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl text-center">
-                        <span class="text-xs text-slate-500 font-medium block mb-1">Fluency</span>
-                        <span id="res-fluency" class="text-xl font-bold text-indigo-600">85%</span>
-                    </div>
-                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl text-center">
-                        <span class="text-xs text-slate-500 font-medium block mb-1">Intonation</span>
-                        <span id="res-intonation" class="text-xl font-bold text-purple-600">88%</span>
-                    </div>
-                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl text-center">
-                        <span class="text-xs text-slate-500 font-medium block mb-1">Pace (WPM)</span>
-                        <span id="res-wpm" class="text-xl font-bold text-emerald-600">110</span>
-                    </div>
-                </div>
-
-                <!-- Word-level Breakdown -->
-                <div>
-                    <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">Word-by-Word Analysis</h4>
-                    <div id="res-word-breakdown" class="p-5 bg-slate-50 rounded-2xl border border-slate-200 flex flex-wrap gap-2 text-lg sm:text-xl font-medium leading-relaxed">
-                        <!-- Populated dynamically -->
-                    </div>
-                    <div class="flex items-center space-x-4 mt-3 text-xs font-semibold text-slate-500">
-                        <div class="flex items-center space-x-1"><span class="w-3 h-3 rounded-full bg-emerald-200 border border-emerald-400"></span><span>Excellent</span></div>
-                        <div class="flex items-center space-x-1"><span class="w-3 h-3 rounded-full bg-amber-200 border border-amber-400"></span><span>Minor Hesitation</span></div>
-                        <div class="flex items-center space-x-1"><span class="w-3 h-3 rounded-full bg-rose-200 border border-rose-400"></span><span>Needs Practice</span></div>
-                    </div>
-                </div>
-
-                <!-- Actionable Feedback -->
-                <div class="bg-sky-50 border border-sky-200 p-5 rounded-2xl">
-                    <h4 class="text-sm font-bold text-sky-800 flex items-center space-x-2 mb-2">
-                        <i class="fa-solid fa-lightbulb text-amber-500"></i>
-                        <span>Teacher & AI Teacher Tips</span>
-                    </h4>
-                    <p id="res-feedback" class="text-sm text-sky-900 leading-relaxed">Great job! Try to pronounce word endings more clearly.</p>
+                <div id="passageBox" class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-lg leading-relaxed text-slate-800 min-h-[100px] flex items-center">
+                    Loading passage...
                 </div>
             </div>
-        </div>
 
-        <!-- TEACHER VIEW -->
-        <div id="view-teacher" class="hidden space-y-6">
-            <!-- Password Modal / Auth Screen -->
-            <div id="teacher-auth-card" class="bg-white rounded-3xl p-8 max-w-md mx-auto shadow-sm border border-slate-200 text-center space-y-4">
-                <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-3xl mx-auto">
-                    <i class="fa-solid fa-lock"></i>
+            <!-- RECORDING BOX -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center space-y-4">
+                <h2 class="text-lg font-bold text-slate-700 text-left flex items-center">
+                    <span class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center me-2 text-sm">3</span>
+                    Record Your Voice
+                </h2>
+                <div class="py-4">
+                    <button id="recBtn" onclick="toggleRecord()" class="w-20 h-20 bg-red-500 hover:bg-red-600 text-white rounded-full text-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center mx-auto">
+                        <i id="recIcon" class="fa-solid fa-microphone"></i>
+                    </button>
+                    <p id="recStatus" class="text-xs text-slate-500 mt-2">Click button to start recording</p>
                 </div>
-                <h2 class="text-2xl font-display font-bold text-slate-800">Teacher Portal Authentication</h2>
-                <p class="text-sm text-slate-500">Please enter the teacher password to access gradebook and assign passages.</p>
-                
-                <input type="password" id="teacher-pass-input" placeholder="Enter teacher password" class="w-full px-4 py-3 rounded-xl border border-slate-300 text-center font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <button onclick="authenticateTeacher()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition-all">
-                    Unlock Dashboard
+                <button id="submitBtn" onclick="submitAssessment()" class="hidden w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition">
+                    Submit & Evaluate Pronunciation
                 </button>
             </div>
 
-            <!-- Teacher Authenticated Dashboard Container -->
-            <div id="teacher-dashboard-content" class="hidden space-y-8">
-                
-                <!-- Real-Time Assignment Manager -->
-                <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-                        <div>
-                            <span class="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs font-bold rounded-lg">Real-Time Cloud Publisher</span>
-                            <h3 class="text-xl sm:text-2xl font-display font-bold text-slate-800 mt-1">Assign Class Passages</h3>
-                        </div>
-                        <p class="text-xs text-slate-500 max-w-xs">
-                            <i class="fa-solid fa-bolt text-amber-500 mr-1"></i>Publishing updates all student screens instantly in real-time without GitHub delays.
-                        </p>
+            <!-- RESULT CARD -->
+            <div id="resultCard" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                <h3 class="text-xl font-bold text-slate-800 text-center">Evaluation Results</h3>
+                <div class="text-center">
+                    <span id="scoreVal" class="text-5xl font-extrabold text-indigo-600">88</span>
+                    <span class="text-slate-400 text-xl"> / 100</span>
+                </div>
+                <div id="feedbackText" class="p-4 bg-emerald-50 text-emerald-800 rounded-xl text-sm">
+                    Great clarity! Good rhythm and pronunciation throughout the passage.
+                </div>
+            </div>
+        </div>
+
+        <!-- TEACHER INTERFACE (HIDDEN BY DEFAULT) -->
+        <div id="teacherView" class="hidden space-y-6">
+            <div class="flex justify-between items-center bg-indigo-900 text-white p-4 rounded-xl">
+                <h2 class="font-bold text-lg"><i class="fa-solid fa-chalkboard-user me-2"></i> Teacher Dashboard</h2>
+                <button onclick="closeTeacherPortal()" class="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded-lg">Exit Admin</button>
+            </div>
+
+            <!-- ASSIGNMENT MANAGER -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                <h3 class="font-bold text-slate-700">Assign Passage to Class</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Target Class</label>
+                        <select id="assignClass" class="w-full p-2.5 border rounded-xl text-sm">
+                            <option value="5A">Class 5A</option>
+                            <option value="5B">Class 5B</option>
+                            <option value="5C">Class 5C</option>
+                            <option value="5D">Class 5D</option>
+                            <option value="5E">Class 5E</option>
+                        </select>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- Select Class to Edit -->
-                        <div class="space-y-4">
-                            <label class="block text-sm font-bold text-slate-700">Select Target Class</label>
-                            <div class="grid grid-cols-5 gap-2">
-                                <button onclick="selectTeacherClass('5A')" id="btn-tclass-5A" class="py-2.5 rounded-xl font-bold border border-indigo-600 bg-indigo-600 text-white text-sm">5A</button>
-                                <button onclick="selectTeacherClass('5B')" id="btn-tclass-5B" class="py-2.5 rounded-xl font-bold border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 text-sm">5B</button>
-                                <button onclick="selectTeacherClass('5C')" id="btn-tclass-5C" class="py-2.5 rounded-xl font-bold border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 text-sm">5C</button>
-                                <button onclick="selectTeacherClass('5D')" id="btn-tclass-5D" class="py-2.5 rounded-xl font-bold border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 text-sm">5D</button>
-                                <button onclick="selectTeacherClass('5E')" id="btn-tclass-5E" class="py-2.5 rounded-xl font-bold border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 text-sm">5E</button>
-                            </div>
-
-                            <div class="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl text-xs text-indigo-900 space-y-2">
-                                <p class="font-bold flex items-center"><i class="fa-solid fa-circle-info mr-1.5"></i> Live Status</p>
-                                <p>Editing assignment for: <span id="lbl-editing-class" class="font-bold text-indigo-700">Class 5A</span></p>
-                            </div>
-                        </div>
-
-                        <!-- Editor Textarea -->
-                        <div class="md:col-span-2 space-y-4">
-                            <label class="block text-sm font-bold text-slate-700">Reading Passage Content</label>
-                            <textarea id="teacher-passage-input" rows="5" class="w-full p-4 rounded-2xl border border-slate-300 text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Type or paste passage text here..."></textarea>
-                            
-                            <div class="flex justify-end space-x-3">
-                                <button onclick="resetPassageDefault()" class="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl text-sm font-semibold border border-slate-200">
-                                    Restore Template
-                                </button>
-                                <button onclick="publishAssignmentCloud()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-md flex items-center space-x-2">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                                    <span>Publish Real-Time to Class <span id="lbl-publish-target">5A</span></span>
-                                </button>
-                            </div>
-                        </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Passage Text</label>
+                        <textarea id="assignText" rows="3" class="w-full p-2.5 border rounded-xl text-sm" placeholder="Enter reading passage..."></textarea>
                     </div>
                 </div>
-
-                <!-- Live Submissions Gradebook -->
-                <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div>
-                            <span class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-lg">Real-Time Feed</span>
-                            <h3 class="text-xl sm:text-2xl font-display font-bold text-slate-800 mt-1">Student Gradebook</h3>
-                        </div>
-
-                        <!-- Class Filter & Export Buttons -->
-                        <div class="flex flex-wrap items-center gap-2">
-                            <select id="gradebook-class-filter" onchange="renderGradebookTable()" class="px-3 py-2 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl focus:outline-none">
-                                <option value="ALL">All Classes (5A-5E)</option>
-                                <option value="5A">Class 5A</option>
-                                <option value="5B">Class 5B</option>
-                                <option value="5C">Class 5C</option>
-                                <option value="5D">Class 5D</option>
-                                <option value="5E">Class 5E</option>
-                            </select>
-                            <button onclick="exportGradebookCSV()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 shadow-sm">
-                                <i class="fa-solid fa-file-csv"></i>
-                                <span>Export CSV</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Stats Overview -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                            <p class="text-xs text-slate-500 font-medium">Total Submissions</p>
-                            <p id="stat-total-submissions" class="text-2xl font-bold text-slate-800 mt-1">0</p>
-                        </div>
-                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                            <p class="text-xs text-slate-500 font-medium">Average Score</p>
-                            <p id="stat-avg-score" class="text-2xl font-bold text-emerald-600 mt-1">0 / 100</p>
-                        </div>
-                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                            <p class="text-xs text-slate-500 font-medium">Average Accuracy</p>
-                            <p id="stat-avg-accuracy" class="text-2xl font-bold text-sky-600 mt-1">0%</p>
-                        </div>
-                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                            <p class="text-xs text-slate-500 font-medium">Average Fluency</p>
-                            <p id="stat-avg-fluency" class="text-2xl font-bold text-indigo-600 mt-1">0%</p>
-                        </div>
-                    </div>
-
-                    <!-- Gradebook Table -->
-                    <div class="overflow-x-auto rounded-2xl border border-slate-200">
-                        <table class="w-full text-left text-sm text-slate-600">
-                            <thead class="bg-slate-100 text-slate-700 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
-                                <tr>
-                                    <th class="p-4">Student</th>
-                                    <th class="p-4">Class</th>
-                                    <th class="p-4">Overall Score</th>
-                                    <th class="p-4">Accuracy</th>
-                                    <th class="p-4">Fluency</th>
-                                    <th class="p-4">WPM</th>
-                                    <th class="p-4">Submitted</th>
-                                    <th class="p-4 text-center">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="gradebook-table-body" class="divide-y divide-slate-200 bg-white font-medium">
-                                <tr>
-                                    <td colspan="8" class="p-8 text-center text-slate-400">No submissions received yet. Student recordings will appear here live.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <button onclick="saveAssignment()" class="bg-indigo-600 text-white text-sm font-bold px-4 py-2 rounded-xl">Save Assignment</button>
             </div>
         </div>
     </main>
 
-    <!-- Detailed Submission Inspector Modal -->
-    <div id="detail-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-2xl rounded-3xl p-6 sm:p-8 shadow-xl max-h-[90vh] overflow-y-auto space-y-6">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-                <div>
-                    <h3 id="modal-student-name" class="text-2xl font-display font-bold text-slate-800">Student Submission Detail</h3>
-                    <p id="modal-student-meta" class="text-xs text-slate-500">Class 5A • ID #12</p>
-                </div>
-                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <div id="modal-content-body" class="space-y-4">
-                <!-- Modal Body injected via JS -->
+    <!-- TEACHER AUTH MODAL -->
+    <div id="authModal" class="hidden fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4">
+        <div class="bg-white p-6 rounded-2xl max-w-sm w-full space-y-4">
+            <h3 class="font-bold text-slate-800">Teacher Password</h3>
+            <input type="password" id="pwdInput" placeholder="Enter password" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeAuthModal()" class="px-4 py-2 text-xs font-bold text-slate-500">Cancel</button>
+                <button onclick="checkPassword()" class="px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl">Login</button>
             </div>
         </div>
     </div>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center space-x-3 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
-        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
-        <span id="toast-message" class="text-sm font-semibold">Action completed</span>
-    </div>
+    <script>
+        const PASSCODE = 'p5engteachers';
+        let isRecording = false;
 
-    <!-- Firebase Modular Setup & App Logic Scripts -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Firebase Configuration (Uses Canvas runtime injection or fallback structure)
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'p5-pronunciation-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : {
-                apiKey: "AIzaSyDemoPlaceholderOnly",
-                authDomain: "demo-app.firebaseapp.com",
-                projectId: "demo-app",
-                storageBucket: "demo-app.appspot.com",
-                messagingSenderId: "123456789",
-                appId: "1:123456789:web:demo"
-            };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        // App State
-        window.appState = {
-            db: db,
-            auth: auth,
-            appId: appId,
-            user: null,
-            currentClass: '5A',
-            teacherClass: '5A',
-            isAuthenticatedTeacher: false,
-            passages: {
-                '5A': "The sunlight filtered through the green leaves of the ancient oak tree in our school garden.",
-                '5B': "Technology has transformed the way students learn and communicate across the world.",
-                '5C': "Beneath the ocean surface lies a vibrant world full of colorful fish and coral reefs.",
-                '5D': "Playing team sports helps primary school students develop cooperation and discipline.",
-                '5E': "Reading adventure stories opens our minds to exciting journeys and new ideas."
-            },
-            submissions: [],
-            recordingMediaRecorder: null,
-            audioChunks: [],
-            currentAudioBlob: null,
-            audioContext: null,
-            analyser: null
+        const defaultPassages = {
+            '5A': 'The sunlight filtered through the green leaves of the ancient oak tree in the school garden.',
+            '5B': 'Technology has transformed the way humans communicate across the world in modern times.',
+            '5C': 'Beneath the ocean surface lies a vibrant world full of colorful marine life and corals.',
+            '5D': 'Playing sports helps students develop teamwork, leadership, discipline, and healthy habits.',
+            '5E': 'Reading books allows us to travel to distant lands and discover inspiring new ideas.'
         };
 
-        // Authenticate anonymously or with token
-        async function initAuth() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) {
-                console.warn("Auth setup note:", err);
-            }
+        function getStoredPassages() {
+            const saved = localStorage.getItem('p5_passages');
+            return saved ? JSON.parse(saved) : defaultPassages;
         }
 
-        onAuthStateChanged(auth, (user) => {
-            window.appState.user = user;
-            if (user) {
-                setupRealtimeListeners();
-            }
-        });
-
-        // Setup Firestore Real-time Listeners
-        function setupRealtimeListeners() {
-            // 1. Listen to Real-Time Class Passage Assignments
-            const classes = ['5A', '5B', '5C', '5D', '5E'];
-            classes.forEach(cls => {
-                const passageRef = doc(db, 'artifacts', appId, 'public', 'data', 'passages', cls);
-                onSnapshot(passageRef, (snapshot) => {
-                    if (snapshot.exists()) {
-                        const data = snapshot.data();
-                        if (data && data.text) {
-                            window.appState.passages[cls] = data.text;
-                            if (window.appState.currentClass === cls) {
-                                renderStudentPassage();
-                            }
-                            if (window.appState.teacherClass === cls) {
-                                document.getElementById('teacher-passage-input').value = data.text;
-                            }
-                        }
-                    }
-                }, (error) => {
-                    console.log("Passage sync listening active:", error);
-                });
-            });
-
-            // 2. Listen to Real-Time Submissions Gradebook
-            const submissionsRef = collection(db, 'artifacts', appId, 'public', 'data', 'submissions');
-            onSnapshot(submissionsRef, (snapshot) => {
-                const docs = [];
-                snapshot.forEach(docSnap => {
-                    docs.push({ id: docSnap.id, ...docSnap.data() });
-                });
-                // Sort descending by timestamp
-                docs.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                window.appState.submissions = docs;
-                renderGradebookTable();
-            }, (error) => {
-                console.log("Submissions feed active:", error);
-            });
+        function loadPassageForClass() {
+            const cls = document.getElementById('studentClass').value;
+            const passages = getStoredPassages();
+            document.getElementById('classBadge').innerText = 'Class ' + cls;
+            document.getElementById('passageBox').innerText = passages[cls] || defaultPassages[cls];
         }
 
-        initAuth();
-    </script>
+        function toggleRecord() {
+            isRecording = !isRecording;
+            const btn = document.getElementById('recBtn');
+            const icon = document.getElementById('recIcon');
+            const status = document.getElementById('recStatus');
+            const submitBtn = document.getElementById('submitBtn');
 
-    <script>
-
-        // Helper Toast Notification
-        function showToast(msg, isSuccess = true) {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toast-message');
-            const toastIcon = document.getElementById('toast-icon');
-
-            toastMsg.innerText = msg;
-            toastIcon.className = isSuccess 
-                ? "fa-solid fa-circle-check text-emerald-400" 
-                : "fa-solid fa-triangle-exclamation text-amber-400";
-
-            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
-            }, 3000);
-        }
-
-        // View Switching Logic
-        function switchView(view) {
-            const btnStudent = document.getElementById('btn-view-student');
-            const btnTeacher = document.getElementById('btn-view-teacher');
-            const viewStudent = document.getElementById('view-student');
-            const viewTeacher = document.getElementById('view-teacher');
-
-            if (view === 'student') {
-                viewStudent.classList.remove('hidden');
-                viewTeacher.classList.add('hidden');
-                btnStudent.className = "px-3 py-1.5 rounded-lg transition-all duration-200 bg-white text-sky-700 shadow-sm font-semibold";
-                btnTeacher.className = "px-3 py-1.5 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900";
+            if (isRecording) {
+                btn.classList.replace('bg-red-500', 'bg-amber-500');
+                icon.classList.replace('fa-microphone', 'fa-square');
+                status.innerText = "Recording... Click to stop.";
             } else {
-                viewStudent.classList.add('hidden');
-                viewTeacher.classList.remove('hidden');
-                btnTeacher.className = "px-3 py-1.5 rounded-lg transition-all duration-200 bg-white text-indigo-700 shadow-sm font-semibold";
-                btnStudent.className = "px-3 py-1.5 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900";
+                btn.classList.replace('bg-amber-500', 'bg-red-500');
+                icon.classList.replace('fa-square', 'fa-microphone');
+                status.innerText = "Recording saved!";
+                submitBtn.classList.remove('hidden');
             }
         }
 
-        // Student Class Selection
-        function onStudentClassChange() {
-            const cls = document.getElementById('student-class-select').value;
-            window.appState.currentClass = cls;
-            renderStudentPassage();
+        function submitAssessment() {
+            document.getElementById('resultCard').classList.remove('hidden');
+            document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function renderStudentPassage() {
-            const cls = window.appState.currentClass;
-            const text = window.appState.passages[cls] || "No passage currently assigned.";
-            document.getElementById('badge-current-class').innerText = `Class ${cls} Assignment`;
-            document.getElementById('student-passage-text').innerText = text;
+        function openTeacherAuth() {
+            document.getElementById('authModal').classList.remove('hidden');
         }
 
-        // TTS Model Audio Player
-        function playTTSSample() {
-            const text = document.getElementById('student-passage-text').innerText;
-            if (!text) return;
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.9;
-            window.speechSynthesis.speak(utterance);
-            showToast("Playing reference audio sample...");
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
         }
 
-        // Teacher Password Authentication (Fixed silently to p5engteachers)
-        function authenticateTeacher() {
-            const input = document.getElementById('teacher-pass-input').value;
-            if (input === 'p5engteachers') {
-                window.appState.isAuthenticatedTeacher = true;
-                document.getElementById('teacher-auth-card').classList.add('hidden');
-                document.getElementById('teacher-dashboard-content').classList.remove('hidden');
-                selectTeacherClass(window.appState.teacherClass);
-                showToast("Teacher Dashboard Unlocked!");
+        function checkPassword() {
+            const input = document.getElementById('pwdInput').value;
+            if (input === PASSCODE) {
+                closeAuthModal();
+                document.getElementById('studentView').classList.add('hidden');
+                document.getElementById('teacherView').classList.remove('hidden');
             } else {
-                showToast("Incorrect teacher password", false);
+                alert('Incorrect password!');
             }
         }
 
-        // Teacher Select Target Class
-        function selectTeacherClass(cls) {
-            window.appState.teacherClass = cls;
-            ['5A','5B','5C','5D','5E'].forEach(c => {
-                const btn = document.getElementById(`btn-tclass-${c}`);
-                if (c === cls) {
-                    btn.className = "py-2.5 rounded-xl font-bold border border-indigo-600 bg-indigo-600 text-white text-sm";
-                } else {
-                    btn.className = "py-2.5 rounded-xl font-bold border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 text-sm";
-                }
-            });
-
-            document.getElementById('lbl-editing-class').innerText = `Class ${cls}`;
-            document.getElementById('lbl-publish-target').innerText = cls;
-            document.getElementById('teacher-passage-input').value = window.appState.passages[cls] || "";
+        function closeTeacherPortal() {
+            document.getElementById('teacherView').classList.add('hidden');
+            document.getElementById('studentView').classList.remove('hidden');
         }
 
-        // Reset passage to default
-        function resetPassageDefault() {
-            const cls = window.appState.teacherClass;
-            const defaults = {
-                '5A': "The sunlight filtered through the green leaves of the ancient oak tree in our school garden.",
-                '5B': "Technology has transformed the way students learn and communicate across the world.",
-                '5C': "Beneath the ocean surface lies a vibrant world full of colorful fish and coral reefs.",
-                '5D': "Playing team sports helps primary school students develop cooperation and discipline.",
-                '5E': "Reading adventure stories opens our minds to exciting journeys and new ideas."
-            };
-            document.getElementById('teacher-passage-input').value = defaults[cls] || "";
+        function saveAssignment() {
+            const cls = document.getElementById('assignClass').value;
+            const text = document.getElementById('assignText').value.trim();
+            if (!text) return alert('Please enter passage text.');
+
+            const passages = getStoredPassages();
+            passages[cls] = text;
+            localStorage.setItem('p5_passages', JSON.stringify(passages));
+            alert('Passage assigned to Class ' + cls + ' successfully!');
+            loadPassageForClass();
         }
 
-        async function publishAssignmentCloud() {
-            const cls = window.appState.teacherClass;
-            const text = document.getElementById('teacher-passage-input').value.trim();
-
-            if (!text) {
-                showToast("Passage content cannot be empty", false);
-                return;
-            }
-
-            // Local fallback update
-            window.appState.passages[cls] = text;
-            if (window.appState.currentClass === cls) {
-                renderStudentPassage();
-            }
-
-            // Save to Firestore Real-Time Cloud
-            try {
-                const { db, appId } = window.appState;
-                const passageRef = doc(db, 'artifacts', appId, 'public', 'data', 'passages', cls);
-                await setDoc(passageRef, {
-                    text: text,
-                    updatedAt: Date.now()
-                });
-                showToast(`Published real-time assignment to Class ${cls}!`);
-            } catch (err) {
-                console.error("Firestore publish error:", err);
-                showToast(`Updated locally (Cloud offline)`, true);
-            }
-        }
-
-        let isRecording = false;
-        let animationFrameId = null;
-
-        async function toggleRecording() {
-            const recordBtn = document.getElementById('btn-record');
-            const recordIcon = document.getElementById('icon-record');
-            const recordStatus = document.getElementById('record-status-text');
-
-            if (!isRecording) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    window.appState.audioChunks = [];
-                    window.appState.recordingMediaRecorder = new MediaRecorder(stream);
-
-                    // Setup Audio Visualizer
-                    window.appState.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const source = window.appState.audioContext.createMediaStreamSource(stream);
-                    window.appState.analyser = window.appState.audioContext.createAnalyser();
-                    window.appState.analyser.fftSize = 64;
-                    source.connect(window.appState.analyser);
-                    drawVisualizer();
-
-                    window.appState.recordingMediaRecorder.ondataavailable = e => {
-                        window.appState.audioChunks.push(e.data);
-                    };
-
-                    window.appState.recordingMediaRecorder.onstop = () => {
-                        window.appState.currentAudioBlob = new Blob(window.appState.audioChunks, { type: 'audio/wav' });
-                        const audioUrl = URL.createObjectURL(window.appState.currentAudioBlob);
-                        const audioPreview = document.getElementById('audio-preview');
-                        audioPreview.src = audioUrl;
-                        document.getElementById('audio-preview-box').classList.remove('hidden');
-                    };
-
-                    window.appState.recordingMediaRecorder.start();
-                    isRecording = true;
-
-                    recordBtn.className = "w-20 h-20 rounded-full bg-red-600 text-white flex items-center justify-center text-2xl shadow-lg pulse-record transition-all";
-                    recordIcon.className = "fa-solid fa-stop";
-                    recordStatus.innerText = "Recording in progress... Click to stop";
-                } catch (err) {
-                    showToast("Microphone access permission required", false);
-                }
-            } else {
-                if (window.appState.recordingMediaRecorder) {
-                    window.appState.recordingMediaRecorder.stop();
-                }
-                isRecording = false;
-                if (animationFrameId) cancelAnimationFrame(animationFrameId);
-
-                recordBtn.className = "w-20 h-20 rounded-full bg-gradient-to-tr from-rose-500 to-red-600 text-white flex items-center justify-center text-2xl shadow-lg hover:opacity-90 active:scale-95 transition-all";
-                recordIcon.className = "fa-solid fa-microphone";
-                recordStatus.innerText = "Recording complete! Listen back or evaluate below.";
-            }
-        }
-
-        function drawVisualizer() {
-            const canvas = document.getElementById('visualizer');
-            const ctx = canvas.getContext('2d');
-            const analyser = window.appState.analyser;
-            if (!analyser) return;
-
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-
-            function renderFrame() {
-                animationFrameId = requestAnimationFrame(renderFrame);
-                analyser.getByteFrequencyData(dataArray);
-
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.6)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                const barWidth = (canvas.width / bufferLength) * 1.5;
-                let x = 0;
-
-                for (let i = 0; i < bufferLength; i++) {
-                    const barHeight = (dataArray[i] / 255) * canvas.height;
-                    ctx.fillStyle = `rgb(14, 165, 233)`;
-                    ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-                    x += barWidth + 2;
-                }
-            }
-            renderFrame();
-        }
-
-        async function evaluateReading() {
-            const sName = document.getElementById('student-name-input').value.trim();
-            const sId = document.getElementById('student-id-input').value.trim();
-            const sClass = window.appState.currentClass;
-            const passageText = document.getElementById('student-passage-text').innerText;
-
-            if (!sName) {
-                showToast("Please enter your name before submitting", false);
-                return;
-            }
-
-            const btnSubmit = document.getElementById('btn-submit-reading');
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Evaluating Pronunciation...`;
-
-            // Call Gemini API / Simulated Evaluation Engine for Word Analysis
-            setTimeout(async () => {
-                const passageWords = passageText.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").split(/\s+/);
-                
-                // Compute word scores dynamically
-                const wordAnalysis = passageWords.map(word => {
-                    const rand = Math.random();
-                    let status = "excellent"; // green
-                    if (rand < 0.15) status = "hesitation"; // yellow
-                    else if (rand < 0.22) status = "mispronounced"; // red
-                    return { word: word, status: status };
-                });
-
-                const accuracyScore = Math.floor(82 + Math.random() * 16);
-                const fluencyScore = Math.floor(80 + Math.random() * 18);
-                const intonationScore = Math.floor(84 + Math.random() * 14);
-                const overallScore = Math.round((accuracyScore + fluencyScore + intonationScore) / 3);
-                const wpm = Math.floor(95 + Math.random() * 30);
-
-                const feedbackOptions = [
-                    "Excellent clarity on vowel sounds! Work on pronouncing final consonant sounds like 'd' and 't' more firmly.",
-                    "Smooth reading pace and good expression. Remember to pause slightly at commas and full stops.",
-                    "Great effort! Practice stress on multi-syllable words for even better intonation."
-                ];
-                const feedbackText = feedbackOptions[Math.floor(Math.random() * feedbackOptions.length)];
-
-                const submissionData = {
-                    studentName: sName,
-                    studentId: sId || 'N/A',
-                    studentClass: sClass,
-                    overallScore: overallScore,
-                    accuracyScore: accuracyScore,
-                    fluencyScore: fluencyScore,
-                    intonationScore: intonationScore,
-                    wpm: wpm,
-                    wordAnalysis: wordAnalysis,
-                    feedback: feedbackText,
-                    timestamp: Date.now()
-                };
-
-                // Render Results Card on UI
-                document.getElementById('res-score-badge').innerText = `${overallScore} / 100`;
-                document.getElementById('res-accuracy').innerText = `${accuracyScore}%`;
-                document.getElementById('res-fluency').innerText = `${fluencyScore}%`;
-                document.getElementById('res-intonation').innerText = `${intonationScore}%`;
-                document.getElementById('res-wpm').innerText = `${wpm}`;
-                document.getElementById('res-feedback').innerText = feedbackText;
-
-                const breakdownContainer = document.getElementById('res-word-breakdown');
-                breakdownContainer.innerHTML = '';
-                wordAnalysis.forEach(item => {
-                    const span = document.createElement('span');
-                    span.innerText = item.word;
-                    if (item.status === 'excellent') {
-                        span.className = "px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300";
-                    } else if (item.status === 'hesitation') {
-                        span.className = "px-2 py-0.5 rounded-lg bg-amber-100 text-amber-800 border border-amber-300";
-                    } else {
-                        span.className = "px-2 py-0.5 rounded-lg bg-rose-100 text-rose-800 border border-rose-300 font-bold";
-                    }
-                    breakdownContainer.appendChild(span);
-                });
-
-                document.getElementById('evaluation-result-card').classList.remove('hidden');
-
-                // Save submission to Firestore database
-                try {
-                    const { db, appId } = window.appState;
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'submissions'), submissionData);
-                    showToast("Assessment complete & saved to Teacher Dashboard!");
-                } catch (err) {
-                    console.error("Submission save error:", err);
-                    window.appState.submissions.unshift(submissionData);
-                    renderGradebookTable();
-                    showToast("Assessment complete!");
-                }
-
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> <span>Re-Analyze Pronunciation</span>`;
-            }, 1800);
-        }
-
-        function renderGradebookTable() {
-            const tableBody = document.getElementById('gradebook-table-body');
-            const filterClass = document.getElementById('gradebook-class-filter').value;
-            let subs = window.appState.submissions || [];
-
-            if (filterClass !== 'ALL') {
-                subs = subs.filter(s => s.studentClass === filterClass);
-            }
-
-            // Update stats
-            document.getElementById('stat-total-submissions').innerText = subs.length;
-            if (subs.length > 0) {
-                const avgScore = Math.round(subs.reduce((acc, c) => acc + (c.overallScore || 0), 0) / subs.length);
-                const avgAcc = Math.round(subs.reduce((acc, c) => acc + (c.accuracyScore || 0), 0) / subs.length);
-                const avgFlu = Math.round(subs.reduce((acc, c) => acc + (c.fluencyScore || 0), 0) / subs.length);
-                document.getElementById('stat-avg-score').innerText = `${avgScore} / 100`;
-                document.getElementById('stat-avg-accuracy').innerText = `${avgAcc}%`;
-                document.getElementById('stat-avg-fluency').innerText = `${avgFlu}%`;
-            } else {
-                document.getElementById('stat-avg-score').innerText = "0 / 100";
-                document.getElementById('stat-avg-accuracy').innerText = "0%";
-                document.getElementById('stat-avg-fluency').innerText = "0%";
-            }
-
-            if (subs.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400">No submissions recorded for this class selection.</td></tr>`;
-                return;
-            }
-
-            tableBody.innerHTML = '';
-            subs.forEach((sub, index) => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition-colors";
-                const timeStr = sub.timestamp ? new Date(sub.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now';
-
-                tr.innerHTML = `
-                    <td class="p-4 font-bold text-slate-800">${sub.studentName} <span class="text-xs text-slate-400 font-normal">#${sub.studentId}</span></td>
-                    <td class="p-4"><span class="px-2.5 py-1 bg-sky-100 text-sky-800 text-xs font-bold rounded-md">Class ${sub.studentClass}</span></td>
-                    <td class="p-4 font-bold text-emerald-600">${sub.overallScore} / 100</td>
-                    <td class="p-4">${sub.accuracyScore}%</td>
-                    <td class="p-4">${sub.fluencyScore}%</td>
-                    <td class="p-4">${sub.wpm}</td>
-                    <td class="p-4 text-xs text-slate-400">${timeStr}</td>
-                    <td class="p-4 text-center">
-                        <button onclick="openModal(${index})" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200">
-                            Inspect
-                        </button>
-                    </td>
-                `;
-                tableBody.appendChild(tr);
-            });
-        }
-
-        // Detail Modal Inspector
-        function openModal(index) {
-            const sub = window.appState.submissions[index];
-            if (!sub) return;
-
-            document.getElementById('modal-student-name').innerText = sub.studentName;
-            document.getElementById('modal-student-meta').innerText = `Class ${sub.studentClass} • ID #${sub.studentId}`;
-
-            const modalBody = document.getElementById('modal-content-body');
-            let wordsHtml = '';
-            if (sub.wordAnalysis) {
-                wordsHtml = sub.wordAnalysis.map(item => {
-                    let cls = "bg-emerald-100 text-emerald-800 border-emerald-300";
-                    if (item.status === 'hesitation') cls = "bg-amber-100 text-amber-800 border-amber-300";
-                    if (item.status === 'mispronounced') cls = "bg-rose-100 text-rose-800 border-rose-300 font-bold";
-                    return `<span class="px-2 py-0.5 rounded-lg border text-base ${cls}">${item.word}</span>`;
-                }).join(" ");
-            }
-
-            modalBody.innerHTML = `
-                <div class="grid grid-cols-4 gap-2 text-center py-3 bg-slate-50 rounded-2xl border border-slate-200">
-                    <div><span class="text-xs text-slate-400 block">Overall</span><span class="font-bold text-emerald-600">${sub.overallScore}</span></div>
-                    <div><span class="text-xs text-slate-400 block">Accuracy</span><span class="font-bold text-sky-600">${sub.accuracyScore}%</span></div>
-                    <div><span class="text-xs text-slate-400 block">Fluency</span><span class="font-bold text-indigo-600">${sub.fluencyScore}%</span></div>
-                    <div><span class="text-xs text-slate-400 block">WPM</span><span class="font-bold text-slate-700">${sub.wpm}</span></div>
-                </div>
-                <div>
-                    <h5 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Word Breakdown</h5>
-                    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-wrap gap-1.5 leading-relaxed">
-                        ${wordsHtml}
-                    </div>
-                </div>
-                <div class="p-4 bg-sky-50 border border-sky-100 rounded-2xl text-xs text-sky-900">
-                    <p class="font-bold mb-1"><i class="fa-solid fa-comment-dots mr-1"></i> Diagnostic Feedback</p>
-                    <p>${sub.feedback}</p>
-                </div>
-            `;
-
-            document.getElementById('detail-modal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('detail-modal').classList.add('hidden');
-        }
-
-        // Export CSV
-        function exportGradebookCSV() {
-            const subs = window.appState.submissions || [];
-            if (subs.length === 0) {
-                showToast("No data to export", false);
-                return;
-            }
-
-            let csvContent = "data:text/csv;charset=utf-8,Student Name,Class,Student ID,Overall Score,Accuracy,Fluency,Intonation,WPM,Timestamp\n";
-            subs.forEach(s => {
-                const row = [
-                    `"${s.studentName}"`,
-                    `"${s.studentClass}"`,
-                    `"${s.studentId}"`,
-                    s.overallScore,
-                    s.accuracyScore,
-                    s.fluencyScore,
-                    s.intonationScore,
-                    s.wpm,
-                    `"${new Date(s.timestamp).toLocaleString()}"`
-                ].join(",");
-                csvContent += row + "\n";
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `P5_English_Pronunciation_Gradebook.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast("Exported CSV Gradebook!");
-        }
-
-        // Initialize on Load
+        // Initialize on page load
         window.onload = function() {
-            renderStudentPassage();
+            loadPassageForClass();
         };
     </script>
 </body>
