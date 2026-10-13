@@ -73,7 +73,7 @@
                 </div>
                 
                 <div id="passageBox" class="p-5 bg-slate-50 rounded-2xl border border-slate-200 text-lg md:text-xl leading-relaxed text-slate-800 font-medium min-h-[120px] flex items-center">
-                    <i class="fa-solid fa-spinner fa-spin text-indigo-500 me-2"></i> Loading passage from cloud database...
+                    Loading passage...
                 </div>
             </div>
 
@@ -249,15 +249,20 @@
 
     <!-- SCRIPT LOGIC -->
     <script>
-        // Working live public cloud real-time database connection
+        // Working public cloud connection
         const firebaseConfig = {
             databaseURL: "https://pronun-p5-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
 
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+        let db = null;
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            db = firebase.database();
+        } catch(e) {
+            console.warn("Firebase offline mode fallback activated.");
         }
-        const db = firebase.database();
 
         const PASSCODE = 'p5engteachers';
         let mediaRecorder;
@@ -273,32 +278,51 @@
             '5E': 'Reading books allows us to travel to distant lands and discover inspiring new ideas.'
         };
 
-        // Live Real-Time Passage Sync
+        // Live Real-Time Passage Sync with Immediate Fallback
         function listenToClassPassage() {
             const cls = document.getElementById('studentClass').value;
             document.getElementById('classBadge').innerText = 'Class ' + cls;
             
-            db.ref('passages/' + cls).on('value', (snapshot) => {
-                const text = snapshot.val();
-                document.getElementById('passageBox').innerText = text ? text : defaultPassages[cls];
-            });
+            // 1. Immediately show default/cached passage (eliminates stuck loading screen)
+            const localSaved = localStorage.getItem('p5_passage_' + cls);
+            document.getElementById('passageBox').innerText = localSaved || defaultPassages[cls];
+
+            // 2. Fetch latest live cloud update if database is reachable
+            if (db) {
+                db.ref('passages/' + cls).on('value', (snapshot) => {
+                    const text = snapshot.val();
+                    if (text) {
+                        document.getElementById('passageBox').innerText = text;
+                        localStorage.setItem('p5_passage_' + cls, text);
+                    }
+                });
+            }
         }
 
-        // SAVE ASSIGNMENT TO CLOUD DATABASE
+        // SAVE ASSIGNMENT TO CLOUD & LOCAL DATABASE
         function saveAssignmentToCloud() {
             const cls = document.getElementById('assignClass').value;
             const text = document.getElementById('assignText').value.trim();
             if (!text) return alert('Please enter passage text.');
 
-            db.ref('passages/' + cls).set(text)
-                .then(() => {
-                    alert('Passage published successfully to Class ' + cls + '! All student screens updated instantly.');
-                    document.getElementById('assignText').value = '';
-                })
-                .catch(err => alert('Sync error: ' + err.message));
+            localStorage.setItem('p5_passage_' + cls, text);
+
+            if (db) {
+                db.ref('passages/' + cls).set(text)
+                    .then(() => {
+                        alert('Passage published to Class ' + cls + '! Synced across all devices.');
+                        document.getElementById('assignText').value = '';
+                    })
+                    .catch(err => {
+                        alert('Saved locally for Class ' + cls + '. (Cloud connection delayed)');
+                    });
+            } else {
+                alert('Saved locally for Class ' + cls + '.');
+            }
+            listenToClassPassage();
         }
 
-        // AUDIO RECORDING LOGIC (Universal Audio Codec Selection for Chrome, Safari, Edge, Mobile)
+        // AUDIO RECORDING LOGIC
         async function toggleRecord() {
             const btn = document.getElementById('recBtn');
             const icon = document.getElementById('recIcon');
@@ -310,7 +334,6 @@
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-                    // Find supported mimeType for browser (Chrome, Safari, Edge, Mobile)
                     let options = {};
                     if (MediaRecorder.isTypeSupported('audio/webm')) {
                         options = { mimeType: 'audio/webm' };
@@ -332,12 +355,10 @@
                         const audioBlob = new Blob(audioChunks, { type: mimeType });
                         const audioUrl = URL.createObjectURL(audioBlob);
                         
-                        // Preview player for student
                         const player = document.getElementById('studentAudioPlayer');
                         player.src = audioUrl;
                         audioPreviewBox.classList.remove('hidden');
 
-                        // Convert audio blob to Base64 string for database storage
                         const reader = new FileReader();
                         reader.readAsDataURL(audioBlob);
                         reader.onloadend = () => {
@@ -353,7 +374,7 @@
                     status.classList.add('text-amber-600');
                     submitBtn.classList.add('hidden');
                 } catch (err) {
-                    alert('Microphone access denied or not supported. Please allow microphone access in your browser settings.');
+                    alert('Microphone access denied or not supported. Please allow microphone access in browser settings.');
                 }
             } else {
                 mediaRecorder.stop();
@@ -391,12 +412,11 @@
                 if (status === 'excellent') correctCount++;
                 else if (status === 'accent') correctCount += 0.7;
 
-                analyzedWords.push({ word:word, status: status });
+                analyzedWords.push({ word: word, status: status });
             });
 
             const overallScore = Math.min(100, Math.round((correctCount / words.length) * 100));
 
-            // Display Word Analysis to Student
             const wordBox = document.getElementById('wordAnalysisBox');
             wordBox.innerHTML = '';
             analyzedWords.forEach(item => {
@@ -414,7 +434,6 @@
 
             document.getElementById('scoreVal').innerText = overallScore;
             
-            // Dynamic Feedback
             const feedbackText = document.getElementById('feedbackText');
             const wrongWords = analyzedWords.filter(w => w.status === 'mispronounced').map(w => w.word.replace(/[^a-zA-Z]/g, ""));
             
@@ -427,7 +446,6 @@
             document.getElementById('resultCard').classList.remove('hidden');
             document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
 
-            // Push Mark and Base64 Audio to Cloud Database
             const markData = {
                 name: name,
                 class: cls,
@@ -437,7 +455,15 @@
                 timestamp: new Date().toLocaleString()
             };
 
-            db.ref('submissions/' + cls).push(markData);
+            // Save locally
+            let localMarks = JSON.parse(localStorage.getItem('p5_student_marks') || '[]');
+            localMarks.push(markData);
+            localStorage.setItem('p5_student_marks', JSON.stringify(localMarks));
+
+            // Sync to Cloud
+            if (db) {
+                db.ref('submissions/' + cls).push(markData);
+            }
         }
 
         // LOAD MARKS & RECORDINGS FOR TEACHER
@@ -446,17 +472,14 @@
             const tableBody = document.getElementById('marksTableBody');
             tableBody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">Loading student marks...</td></tr>';
 
-            db.ref('submissions').on('value', (snapshot) => {
-                const allData = snapshot.val();
+            const renderMarks = (allData) => {
                 tableBody.innerHTML = '';
-
                 if (!allData) {
                     tableBody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">No student submissions recorded yet.</td></tr>';
                     return;
                 }
 
                 let rowsCount = 0;
-
                 Object.keys(allData).forEach(cls => {
                     if (filterClass === 'ALL' || filterClass === cls) {
                         const classSubmissions = allData[cls];
@@ -491,15 +514,27 @@
                 if (rowsCount === 0) {
                     tableBody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">No results found for selected class filter.</td></tr>';
                 }
-            });
+            };
+
+            if (db) {
+                db.ref('submissions').on('value', (snapshot) => {
+                    renderMarks(snapshot.val());
+                });
+            } else {
+                let localMarks = JSON.parse(localStorage.getItem('p5_student_marks') || '[]');
+                let formatted = {};
+                localMarks.forEach((m, idx) => {
+                    if (!formatted[m.class]) formatted[m.class] = {};
+                    formatted[m.class]['item_' + idx] = m;
+                });
+                renderMarks(formatted);
+            }
         }
 
         // EXPORT TO EXCEL / CSV
         function exportCSV() {
-            db.ref('submissions').once('value', (snapshot) => {
-                const data = snapshot.val();
+            const processAndExport = (data) => {
                 if (!data) return alert('No data available to export.');
-
                 let csv = 'Student Name,Class,Score,Mispronounced Words,Timestamp\n';
                 Object.keys(data).forEach(cls => {
                     Object.keys(data[cls]).forEach(k => {
@@ -515,7 +550,13 @@
                 a.setAttribute('href', url);
                 a.setAttribute('download', 'P5_Pronunciation_Marks.csv');
                 a.click();
-            });
+            };
+
+            if (db) {
+                db.ref('submissions').once('value', (snapshot) => {
+                    processAndExport(snapshot.val());
+                });
+            }
         }
 
         // AUTH & NAVIGATION
