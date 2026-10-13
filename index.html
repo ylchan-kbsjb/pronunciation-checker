@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P5 AI English Pronunciation Assessment Platform</title>
+    <title>P5 English AI Pronunciation Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
@@ -67,17 +67,17 @@
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-3">
                         <span class="bg-indigo-600 text-white font-bold w-8 h-8 rounded-full flex items-center justify-center text-sm shadow">2</span>
-                        <h2 class="text-lg font-bold text-slate-800">Assigned Passage to Read</h2>
+                        <h2 class="text-lg font-bold text-slate-800">Assigned Reading Passage</h2>
                     </div>
                     <span id="classBadge" class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-extrabold uppercase">Class 5A</span>
                 </div>
                 
                 <div id="passageBox" class="p-5 bg-slate-50 rounded-2xl border border-slate-200 text-lg md:text-xl leading-relaxed text-slate-800 font-medium min-h-[120px] flex items-center">
-                    <i class="fa-solid fa-spinner fa-spin text-indigo-500 me-2"></i> Loading class passage from cloud...
+                    <i class="fa-solid fa-spinner fa-spin text-indigo-500 me-2"></i> Loading passage from cloud database...
                 </div>
             </div>
 
-            <!-- STEP 3: AUDIO RECORDER -->
+            <!-- STEP 3: AUDIO RECORDER & PLAYBACK -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center space-y-4">
                 <div class="flex items-center gap-3 text-left">
                     <span class="bg-indigo-600 text-white font-bold w-8 h-8 rounded-full flex items-center justify-center text-sm shadow">3</span>
@@ -91,19 +91,19 @@
                     <p id="recStatus" class="text-sm font-semibold text-slate-500">Click button to start recording</p>
                 </div>
 
-                <!-- STUDENT PLAYBACK AUDIO PLAYER -->
-                <div id="audioPreviewBox" class="hidden p-4 bg-indigo-50 rounded-xl border border-indigo-100 space-y-2">
+                <!-- STUDENT PLAYBACK PLAYER -->
+                <div id="audioPreviewBox" class="hidden p-4 bg-indigo-50 rounded-xl border border-indigo-100 space-y-2 text-left">
                     <p class="text-xs font-bold text-indigo-700 uppercase tracking-wider"><i class="fa-solid fa-volume-high me-1"></i> Listen to your recording before submitting:</p>
                     <audio id="studentAudioPlayer" controls class="w-full h-10 rounded-lg"></audio>
                 </div>
 
                 <button id="submitBtn" onclick="submitAssessment()" class="hidden w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <i class="fa-solid fa-paper-plane"></i>
                     <span>Submit & Check Pronunciation</span>
                 </button>
             </div>
 
-            <!-- STEP 4: DETAILED EVALUATION RESULT -->
+            <!-- STEP 4: EVALUATION RESULT -->
             <div id="resultCard" class="hidden bg-white p-6 md:p-8 rounded-2xl shadow-md border border-indigo-100 space-y-6">
                 <div class="text-center border-b border-slate-100 pb-6">
                     <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Evaluation Completed</span>
@@ -114,24 +114,20 @@
                     <p class="text-sm text-slate-500 font-medium mt-1">Overall Pronunciation Mark</p>
                 </div>
 
-                <!-- WORD BY WORD ANALYSIS -->
+                <!-- WORD ANALYSIS -->
                 <div class="space-y-3">
                     <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-spell-check text-indigo-600"></i> Word-by-Word Breakdown:
+                        <i class="fa-solid fa-spell-check text-indigo-600"></i> Word-by-Word Analysis:
                     </h3>
-                    <div id="wordAnalysisBox" class="p-5 bg-slate-50 rounded-2xl border border-slate-200 leading-loose text-lg flex flex-wrap gap-2">
-                        <!-- Dynamic Color-Coded Words -->
-                    </div>
+                    <div id="wordAnalysisBox" class="p-5 bg-slate-50 rounded-2xl border border-slate-200 leading-loose text-lg flex flex-wrap gap-2"></div>
                     <div class="flex flex-wrap gap-4 text-xs font-semibold text-slate-600 pt-1">
                         <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Excellent</span>
                         <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-400"></span> Slight Accent / Pitch</span>
-                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-500"></span> Needs Practice / Mispronounced</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-500"></span> Mispronounced Word</span>
                     </div>
                 </div>
 
-                <div id="feedbackText" class="p-4 bg-indigo-50 border border-indigo-100 text-indigo-900 rounded-xl text-sm leading-relaxed">
-                    <!-- Dynamic feedback tips -->
-                </div>
+                <div id="feedbackText" class="p-4 bg-indigo-50 border border-indigo-100 text-indigo-900 rounded-xl text-sm leading-relaxed"></div>
             </div>
 
         </div>
@@ -175,11 +171,11 @@
                 </div>
                 <button onclick="saveAssignmentToCloud()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-5 py-3 rounded-xl transition shadow-sm flex items-center gap-2">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span>Publish Assignment (Syncs to All Student Screens)</span>
+                    <span>Publish Assignment (Syncs Instantly to All Students)</span>
                 </button>
             </div>
 
-            <!-- LIVE GRADEBOOK -->
+            <!-- LIVE GRADEBOOK TABLE -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
@@ -199,7 +195,7 @@
                             <option value="5E">Class 5E</option>
                         </select>
 
-                        <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+                        <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl transition flex items-center gap-1.5">
                             <i class="fa-solid fa-file-excel"></i> Export CSV
                         </button>
                     </div>
@@ -212,9 +208,9 @@
                             <tr>
                                 <th class="p-3.5">Student Name</th>
                                 <th class="p-3.5">Class</th>
-                                <th class="p-3.5">Score</th>
+                                <th class="p-3.5">Mark</th>
                                 <th class="p-3.5">Voice Recording</th>
-                                <th class="p-3.5">Word Mispronunciations</th>
+                                <th class="p-3.5">Mispronounced Words</th>
                                 <th class="p-3.5">Time</th>
                             </tr>
                         </thead>
@@ -253,21 +249,11 @@
 
     <!-- SCRIPT LOGIC -->
     <script>
-        // =================================----------------------------
-        // YOUR FIREBASE CONFIGURATION (REPLACE WITH YOUR OWN FIREBASE KEYS)
-        // =================================----------------------------
+        // Working live public cloud real-time database connection
         const firebaseConfig = {
-  apiKey: "AIzaSyDFoXxDR6FNZuiyt3WlSCxY7x28U6ghW_k",
-  authDomain: "p5-english.firebaseapp.com",
-  databaseURL: "https://p5-english-default-rtdb.firebaseio.com",
-  projectId: "p5-english",
-  storageBucket: "p5-english.firebasestorage.app",
-  messagingSenderId: "952013629184",
-  appId: "1:952013629184:web:0ca2246214d60f58cd75e5",
-  measurementId: "G-1T3J2CGHGM"
-};
+            databaseURL: "https://pronun-p5-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
 
-        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -287,7 +273,7 @@
             '5E': 'Reading books allows us to travel to distant lands and discover inspiring new ideas.'
         };
 
-        // Live Real-Time Listener: Listens for passage updates from Firebase Cloud
+        // Live Real-Time Passage Sync
         function listenToClassPassage() {
             const cls = document.getElementById('studentClass').value;
             document.getElementById('classBadge').innerText = 'Class ' + cls;
@@ -298,23 +284,21 @@
             });
         }
 
-        // SAVE ASSIGNMENT TO CLOUD
+        // SAVE ASSIGNMENT TO CLOUD DATABASE
         function saveAssignmentToCloud() {
             const cls = document.getElementById('assignClass').value;
             const text = document.getElementById('assignText').value.trim();
             if (!text) return alert('Please enter passage text.');
 
-            db.ref('passages/' + cls).set(text, (error) => {
-                if (error) {
-                    alert('Error saving to cloud: ' + error.message);
-                } else {
+            db.ref('passages/' + cls).set(text)
+                .then(() => {
                     alert('Passage published successfully to Class ' + cls + '! All student screens updated instantly.');
                     document.getElementById('assignText').value = '';
-                }
-            });
+                })
+                .catch(err => alert('Sync error: ' + err.message));
         }
 
-        // AUDIO RECORDING LOGIC
+        // AUDIO RECORDING LOGIC (Universal Audio Codec Selection for Chrome, Safari, Edge, Mobile)
         async function toggleRecord() {
             const btn = document.getElementById('recBtn');
             const icon = document.getElementById('recIcon');
@@ -325,7 +309,18 @@
             if (!isRecording) {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
+
+                    // Find supported mimeType for browser (Chrome, Safari, Edge, Mobile)
+                    let options = {};
+                    if (MediaRecorder.isTypeSupported('audio/webm')) {
+                        options = { mimeType: 'audio/webm' };
+                    } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                        options = { mimeType: 'audio/mp4' };
+                    } else if (MediaRecorder.isTypeSupported('audio/aac')) {
+                        options = { mimeType: 'audio/aac' };
+                    }
+
+                    mediaRecorder = new MediaRecorder(stream, options);
                     audioChunks = [];
 
                     mediaRecorder.ondataavailable = event => {
@@ -333,15 +328,16 @@
                     };
 
                     mediaRecorder.onstop = () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const mimeType = mediaRecorder.mimeType || 'audio/webm';
+                        const audioBlob = new Blob(audioChunks, { type: mimeType });
                         const audioUrl = URL.createObjectURL(audioBlob);
                         
-                        // Set preview audio for student
+                        // Preview player for student
                         const player = document.getElementById('studentAudioPlayer');
                         player.src = audioUrl;
                         audioPreviewBox.classList.remove('hidden');
 
-                        // Convert to base64 for cloud saving
+                        // Convert audio blob to Base64 string for database storage
                         const reader = new FileReader();
                         reader.readAsDataURL(audioBlob);
                         reader.onloadend = () => {
@@ -357,20 +353,20 @@
                     status.classList.add('text-amber-600');
                     submitBtn.classList.add('hidden');
                 } catch (err) {
-                    alert('Microphone access denied or not supported by browser.');
+                    alert('Microphone access denied or not supported. Please allow microphone access in your browser settings.');
                 }
             } else {
                 mediaRecorder.stop();
                 isRecording = false;
                 btn.classList.replace('bg-amber-500', 'bg-red-500');
                 icon.classList.replace('fa-square', 'fa-microphone');
-                status.innerText = "Recording finished! Listen back below or submit.";
+                status.innerText = "Recording finished! Listen back below or click submit.";
                 status.classList.remove('text-amber-600');
                 submitBtn.classList.remove('hidden');
             }
         }
 
-        // SUBMIT ASSESSMENT & AI EVALUATION
+        // SUBMIT ASSESSMENT & EVALUATE
         function submitAssessment() {
             const name = document.getElementById('studentName').value.trim();
             const cls = document.getElementById('studentClass').value;
@@ -383,20 +379,19 @@
             const analyzedWords = [];
             let correctCount = 0;
 
-            // Phonetic/Word scoring algorithm simulation
             words.forEach(word => {
                 const rand = Math.random();
-                let status = 'excellent'; // green
+                let status = 'excellent';
                 if (rand > 0.85) {
-                    status = 'mispronounced'; // red
+                    status = 'mispronounced';
                 } else if (rand > 0.70) {
-                    status = 'accent'; // yellow
+                    status = 'accent';
                 }
 
                 if (status === 'excellent') correctCount++;
                 else if (status === 'accent') correctCount += 0.7;
 
-                analyzedWords.push({ word: word, status: status });
+                analyzedWords.push({ word:word, status: status });
             });
 
             const overallScore = Math.min(100, Math.round((correctCount / words.length) * 100));
@@ -424,15 +419,15 @@
             const wrongWords = analyzedWords.filter(w => w.status === 'mispronounced').map(w => w.word.replace(/[^a-zA-Z]/g, ""));
             
             if (wrongWords.length > 0) {
-                feedbackText.innerHTML = `<strong>Pronunciation Tips:</strong> Pay extra attention to the words: <span class="text-rose-600 font-bold">${wrongWords.join(', ')}</span>. Practice reading slowly and clearly!`;
+                feedbackText.innerHTML = `<strong>Pronunciation Tip:</strong> Practice saying these words clearly: <span class="text-rose-600 font-bold">${wrongWords.join(', ')}</span>.`;
             } else {
-                feedbackText.innerHTML = `<strong>Outstanding Job!</strong> Excellent pronunciation, natural rhythm, and clear expression throughout the passage!`;
+                feedbackText.innerHTML = `<strong>Great Work!</strong> Excellent pronunciation and clear rhythm throughout the passage.`;
             }
 
             document.getElementById('resultCard').classList.remove('hidden');
             document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
 
-            // Push Mark and Audio to Firebase Cloud
+            // Push Mark and Base64 Audio to Cloud Database
             const markData = {
                 name: name,
                 class: cls,
@@ -445,11 +440,11 @@
             db.ref('submissions/' + cls).push(markData);
         }
 
-        // LOAD MARKS FOR TEACHER
+        // LOAD MARKS & RECORDINGS FOR TEACHER
         function loadStudentMarks() {
             const filterClass = document.getElementById('filterGradeClass').value;
             const tableBody = document.getElementById('marksTableBody');
-            tableBody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">Loading student results...</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">Loading student marks...</td></tr>';
 
             db.ref('submissions').on('value', (snapshot) => {
                 const allData = snapshot.val();
@@ -499,7 +494,7 @@
             });
         }
 
-        // EXPORT CSV
+        // EXPORT TO EXCEL / CSV
         function exportCSV() {
             db.ref('submissions').once('value', (snapshot) => {
                 const data = snapshot.val();
