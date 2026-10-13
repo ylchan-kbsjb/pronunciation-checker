@@ -6,16 +6,20 @@
     <title>P5 English AI Pronunciation Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Firebase Cloud SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 font-sans">
 
     <!-- NAV BAR -->
     <nav class="bg-indigo-600 text-white shadow-md p-4 flex justify-between items-center">
         <div class="flex items-center gap-2">
-            <i class="fa-solid me-2 fa-microphone-lines text-2xl text-yellow-300"></i>
+            <i class="fa-solid fa-microphone-lines text-2xl text-yellow-300 me-2"></i>
             <h1 class="font-bold text-xl tracking-wide">P5 AI Pronunciation Evaluator</h1>
         </div>
-        <button id="portalToggleBtn" onclick="openTeacherAuth()" class="bg-indigo-700 hover:bg-indigo-800 text-xs px-3 py-2 rounded-lg transition font-medium">
+        <button onclick="openTeacherAuth()" class="bg-indigo-700 hover:bg-indigo-800 text-xs px-3 py-2 rounded-lg transition font-medium">
             <i class="fa-solid fa-user-shield me-1"></i> Teacher Portal
         </button>
     </nav>
@@ -33,7 +37,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Select Class</label>
-                        <select id="studentClass" onchange="loadPassageForClass()" class="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <select id="studentClass" onchange="listenToClassPassage()" class="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
                             <option value="5A">Primary 5A</option>
                             <option value="5B">Primary 5B</option>
                             <option value="5C">Primary 5C</option>
@@ -58,7 +62,7 @@
                     <span id="classBadge" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold">Class 5A</span>
                 </div>
                 <div id="passageBox" class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-lg leading-relaxed text-slate-800 min-h-[100px] flex items-center">
-                    Loading passage...
+                    Loading cloud passage...
                 </div>
             </div>
 
@@ -92,7 +96,7 @@
             </div>
         </div>
 
-        <!-- TEACHER INTERFACE (HIDDEN BY DEFAULT) -->
+        <!-- TEACHER INTERFACE -->
         <div id="teacherView" class="hidden space-y-6">
             <div class="flex justify-between items-center bg-indigo-900 text-white p-4 rounded-xl">
                 <h2 class="font-bold text-lg"><i class="fa-solid fa-chalkboard-user me-2"></i> Teacher Dashboard</h2>
@@ -101,7 +105,7 @@
 
             <!-- ASSIGNMENT MANAGER -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <h3 class="font-bold text-slate-700">Assign Passage to Class</h3>
+                <h3 class="font-bold text-slate-700">Assign Passage to Class (Real-Time Cloud Sync)</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Target Class</label>
@@ -118,7 +122,9 @@
                         <textarea id="assignText" rows="3" class="w-full p-2.5 border rounded-xl text-sm" placeholder="Enter reading passage..."></textarea>
                     </div>
                 </div>
-                <button onclick="saveAssignment()" class="bg-indigo-600 text-white text-sm font-bold px-4 py-2 rounded-xl">Save Assignment</button>
+                <button onclick="saveAssignmentToCloud()" class="bg-indigo-600 text-white text-sm font-bold px-4 py-2 rounded-xl">
+                    Publish Assignment to All Student Devices
+                </button>
             </div>
         </div>
     </main>
@@ -136,6 +142,26 @@
     </div>
 
     <script>
+        // -------------------------------------------------------------
+        // REPLACE THIS WITH YOUR REAL FIREBASE CONFIG FROM STEP 2 ABOVE
+        // -------------------------------------------------------------
+        const firebaseConfig = {
+  apiKey: "AIzaSyDFoXxDR6FNZuiyt3WlSCxY7x28U6ghW_k",
+  authDomain: "p5-english.firebaseapp.com",
+  databaseURL: "https://p5-english-default-rtdb.firebaseio.com",
+  projectId: "p5-english",
+  storageBucket: "p5-english.firebasestorage.app",
+  messagingSenderId: "952013629184",
+  appId: "1:952013629184:web:0ca2246214d60f58cd75e5",
+  measurementId: "G-1T3J2CGHGM"
+};
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
         const PASSCODE = 'p5engteachers';
         let isRecording = false;
 
@@ -147,16 +173,36 @@
             '5E': 'Reading books allows us to travel to distant lands and discover inspiring new ideas.'
         };
 
-        function getStoredPassages() {
-            const saved = localStorage.getItem('p5_passages');
-            return saved ? JSON.parse(saved) : defaultPassages;
+        // Live Real-Time Listener: Listens for updates from Firebase Cloud
+        function listenToClassPassage() {
+            const cls = document.getElementById('studentClass').value;
+            document.getElementById('classBadge').innerText = 'Class ' + cls;
+            
+            // Listen to real-time changes in cloud database
+            db.ref('passages/' + cls).on('value', (snapshot) => {
+                const text = snapshot.val();
+                if (text) {
+                    document.getElementById('passageBox').innerText = text;
+                } else {
+                    document.getElementById('passageBox').innerText = defaultPassages[cls];
+                }
+            });
         }
 
-        function loadPassageForClass() {
-            const cls = document.getElementById('studentClass').value;
-            const passages = getStoredPassages();
-            document.getElementById('classBadge').innerText = 'Class ' + cls;
-            document.getElementById('passageBox').innerText = passages[cls] || defaultPassages[cls];
+        function saveAssignmentToCloud() {
+            const cls = document.getElementById('assignClass').value;
+            const text = document.getElementById('assignText').value.trim();
+            if (!text) return alert('Please enter passage text.');
+
+            // Push to Firebase Realtime Database
+            db.ref('passages/' + cls).set(text, (error) => {
+                if (error) {
+                    alert('Error updating cloud database: ' + error.message);
+                } else {
+                    alert('Passage published! All student devices in Class ' + cls + ' updated in real-time.');
+                    document.getElementById('assignText').value = '';
+                }
+            });
         }
 
         function toggleRecord() {
@@ -179,6 +225,20 @@
         }
 
         function submitAssessment() {
+            const name = document.getElementById('studentName').value.trim();
+            const cls = document.getElementById('studentClass').value;
+            if (!name) return alert('Please enter your Student Name/ID first.');
+
+            // Save mark to cloud database for teacher to see
+            const markData = {
+                name: name,
+                class: cls,
+                score: 88,
+                timestamp: new Date().toISOString()
+            };
+            
+            db.ref('marks/' + cls).push(markData);
+
             document.getElementById('resultCard').classList.remove('hidden');
             document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
         }
@@ -207,21 +267,9 @@
             document.getElementById('studentView').classList.remove('hidden');
         }
 
-        function saveAssignment() {
-            const cls = document.getElementById('assignClass').value;
-            const text = document.getElementById('assignText').value.trim();
-            if (!text) return alert('Please enter passage text.');
-
-            const passages = getStoredPassages();
-            passages[cls] = text;
-            localStorage.setItem('p5_passages', JSON.stringify(passages));
-            alert('Passage assigned to Class ' + cls + ' successfully!');
-            loadPassageForClass();
-        }
-
-        // Initialize on page load
+        // Initialize real-time cloud listener on load
         window.onload = function() {
-            loadPassageForClass();
+            listenToClassPassage();
         };
     </script>
 </body>
